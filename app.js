@@ -34,17 +34,56 @@ if(env === 'development') {
     mongoose.connect(db_url);
 }
 else {
-  var db_url = "mongodb://printvoid:nodecrud@ds063869.mongolab.com:63869/nodecrud";
-  mongoose.connect(db_url);
+ // var db_url = "mongodb://printvoid:nodecrud@ds063869.mongolab.com:63869/nodecrud";
+ // mongoose.connect(db_url);
+    console.log("Go and define a mongoDB on Mongolab and connect the uri in app.js please")
 }
 
 mongoose.connect(db_url);
-var UserSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    phone: Number
+var Schema = mongoose.Schema;
+
+// Editor Schema
+Var editorSchema = Schema({
+    _id:Number,
+    name:String,
+    lastname:String,
+    email:String,
+    password:String,
+    phone:String,
+    git:String,
+    address:String,
+    requests: [{type:Schema.Types.ObjectId, ref:'Request'}]
+    });
+
+
+//worker Schema
+Var workerSchema = Schema({
+    _id:Number,
+    name:String,
+    lastname:String,
+    email:String,
+    password:String,
+    git:String,
+    register_date:Date,
+    picked_tasks: [{type:Schema.Types.ObjectId, ref:'Request'}]
 });
-var Users = mongoose.model('Users', UserSchema);
+
+// Requests (Title & Description)
+Var requestSchema = Schema({
+    _creator:{type:Number, ref:'Editor'},
+    title:String,
+    description:String,
+    pickers: [{type:Number, ref:'Worker'}]
+});
+
+
+
+
+var Editor = mongoose.model('Editor', editorSchema);
+var Request= mongoose.model('Request', requestSchema);
+var Worker = mongoose.model('Worker', workerSchema);
+
+
 
 
 app.get('/', routes.index);
