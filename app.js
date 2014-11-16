@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -14,7 +13,7 @@ var env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 2000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -36,6 +35,11 @@ if(env === 'development') {
 else {
  // var db_url = "mongodb://printvoid:nodecrud@ds063869.mongolab.com:63869/nodecrud";
  // mongoose.connect(db_url);
+    //TODO Add mongolab please
+    var db_url = "mongodb://localhost/storedata";
+    // var db_url = "mongodb://printvoid:nodecrud@ds063869.mongolab.com:63869/nodecrud";
+    console.log("DB locally Connected not production ready")
+    mongoose.connect(db_url);
     console.log("Go and define a mongoDB on Mongolab and connect the uri in app.js please")
 }
 
@@ -43,7 +47,7 @@ mongoose.connect(db_url);
 var Schema = mongoose.Schema;
 
 // Editor Schema
-Var editorSchema = Schema({
+var editorSchema = Schema({
     _id:Number,
     name:String,
     lastname:String,
@@ -57,7 +61,7 @@ Var editorSchema = Schema({
 
 
 //worker Schema
-Var workerSchema = Schema({
+var workerSchema = Schema({
     _id:Number,
     name:String,
     lastname:String,
@@ -69,7 +73,7 @@ Var workerSchema = Schema({
 });
 
 // Requests (Title & Description)
-Var requestSchema = Schema({
+var requestSchema = Schema({
     _creator:{type:Number, ref:'Editor'},
     title:String,
     description:String,
@@ -109,6 +113,7 @@ app.post('/users', function(req, res) {
         })
 });
 
+// In Arabic this is what brings name from DB calling next will let below functions see name
 app.param('name', function(req, res, next, name) {
     Users.find({name:name}, function(err, docs) {
         req.user = docs[0];
