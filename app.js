@@ -41,7 +41,7 @@ var Schema = mongoose.Schema;
 
 // Editor Schema
 var editorSchema = new Schema({
-    _id:Number,
+ //   _id:Number,
     name:String,
     lastname:String,
     email:String,
@@ -55,7 +55,7 @@ var editorSchema = new Schema({
 
 //worker Schema
 var workerSchema = new Schema({
-    _id:Number,
+  //  _id:Number,
     name:String,
     lastname:String,
     email:String,
@@ -104,6 +104,35 @@ new Editor({
 app.get('/editors', function(req,res){
                     res.render("editors.jade"); 
                     });
+
+
+app.get('/editors/request', function(req,res){
+                    res.render("editorreq.jade"); 
+                    });
+
+//app.param('id', function(req, res, next, id) {
+//   Editor.find({'_id': new BSON.ObjectId('id')}, function(err, docs) {
+//        if (err) return next(err);
+//        req.id = docs;
+//        console.log(docs);
+//        next();
+//    });
+//});
+
+
+
+app.post('/editors/:id', function(req,res){
+         Editor.findOne({_id:req.params.id}, function (err, b){
+           // res.end(b);
+         // console.log(req.params.id, b);                        
+                         
+          console.log(b.name);                        
+      })}
+);
+
+
+
+
 
 
 http.createServer(app).listen(app.get('port'), function(){
