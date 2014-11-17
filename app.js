@@ -68,6 +68,7 @@ var workerSchema = new Schema({
 // Requests (Title & Description)
 var requestSchema = new Schema({
     _creator:{type:Number, ref:'Editor'},
+    reqid:String,
     title:String,
     description:String,
     pickers: [{type:Number, ref:'Worker'}]
@@ -96,39 +97,58 @@ new Editor({
   email: b.email,
   password:b.password,
   git:b.git
-  }).save(function(err, respose) { if (err) res.json(err);
-     res.redirect('/') 
+  }).save(function(err, response) { if (err) console.log("err saving your information come back later!");
+    res.redirect('/') 
     })
 });
 
+// Get the Editor Sign Up form
 app.get('/editors', function(req,res){
                     res.render("editors.jade"); 
                     });
 
-
-app.get('/editors/request', function(req,res){
-                    res.render("editorreq.jade"); 
-                    });
+//Editor - Write a request
+app.get('/editors/:id', function(req,res){
+                    res.render("editorreq.jade", {user:req.params.id});
+     // for now redirect  to make some requests
+    // TODO Editors' posts need to be populated to the jadeview and also shown, with ability to add for more
+         });
 
 //app.param('id', function(req, res, next, id) {
-//   Editor.find({'_id': new BSON.ObjectId('id')}, function(err, docs) {
-//        if (err) return next(err);
-//        req.id = docs;
-//        console.log(docs);
+//    Editor.findOne({_id:id}, function(err, docs) {
+///        req.id = docs[0];
 //        next();
 //    });
 //});
 
-
-
 app.post('/editors/:id', function(req,res){
-         Editor.findOne({_id:req.params.id}, function (err, b){
+// Editor.update({_id:ObjectId(req.params.id)},{title:b.title}); 
+
+    var b = req.body;
+    var rid = req.params.id;
+    console.log(b, rid);
+
+// To find anything with in editors, the id needed to poulate the requests to link them to the corresponding editor
+//    Editor.findOne({_id:req.params.id}, function(err, docs) {
+ //   console.log(docs._id);
+    new Request({
+           reqid: rid,
+           title: b.title,
+           description:b.description,
+            }).save(function(err, response) { if (err) console.log("err saving your information come back later!")});
+         console.log(b);
+         res.redirect('/')
+    })
+
+// This is how we can find something by an Id for example could be used by app.param middleware better to pass id to next function
+//app.post('/editors/:id', function(req,res){
+//         Editor.findOne({_id:req.params.id}, function (err, b){
            // res.end(b);
          // console.log(req.params.id, b);                        
                          
-          console.log(b.name);                        
-      })}
-);
+//          console.log(b.name);                        
+//      })}
+//);
 
 
 
