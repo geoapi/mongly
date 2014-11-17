@@ -150,7 +150,12 @@ app.post('/editors/:id', function(req,res){
 //      })}
 //);
 
-
+//show all tasks requested by an editor with id :id
+    app.get('/etasks/:id', function(req,res){
+            Request.find({reqid:'54698842edb40c8053000002'}, function(req,tasks){
+            res.render('tasks.jade', {tasks:tasks});
+                    });
+ });
 
 
 
