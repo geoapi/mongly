@@ -92,8 +92,10 @@ var b = req.body;
 console.log(b);
 new Editor({
   name: b.name,
-  email: b.email
-
+  lastname:b.lastname,
+  email: b.email,
+  password:b.password,
+  git:b.git
   }).save(function(err, respose) { if (err) res.json(err);
      res.redirect('/') 
     })
