@@ -50,7 +50,7 @@ var editorSchema = new Schema({
     git:String,
     address:String,
     requests: [{type:Schema.Types.ObjectId, ref:'Request'}]
-    });
+  	  });
 
 
 //worker Schema
@@ -62,6 +62,7 @@ var workerSchema = new Schema({
     password:String,
     git:String,
     register_date:Date,
+    address:String,
     picked_tasks: [{type:Schema.Types.ObjectId, ref:'Request'}]
 });
 
@@ -90,7 +91,7 @@ app.get('/', function(req,res){
 
 app.post('/editors', function(req, res) {
 var b = req.body;
-console.log(b);
+//console.log(b);
 new Editor({
   name: b.name,
   lastname:b.lastname,
@@ -98,7 +99,8 @@ new Editor({
   password:b.password,
   git:b.git
   }).save(function(err, response) { if (err) console.log("err saving your information come back later!");
-    res.redirect('/') 
+    var id =response.id;
+    res.redirect('/editors/'+id) 
     })
 });
 
@@ -152,13 +154,46 @@ app.post('/editors/:id', function(req,res){
 
 //show all tasks requested by an editor with id :id
     app.get('/etasks/:id', function(req,res){
-            Request.find({reqid:'54698842edb40c8053000002'}, function(req,tasks){
+            Request.find({reqid:req.params.id}, function(req,tasks){
             res.render('tasks.jade', {tasks:tasks});
                     });
  });
 
 
 
+//sign Up for workers
+app.get('/workers', function(req,res){
+ res.render("workers.jade");
+});
+
+//posting worker signup details 
+app.post('/workers', function(req, res) {
+var b = req.body;
+console.log(b);
+new Worker({
+  name: b.name,
+  lastname:b.lastname,
+  email: b.email,
+  password:b.password,
+  address:b.address,
+  git:b.git,
+  reqister_date: Date.now()
+  }).save(function(err, response) { if (err) console.log("err saving your information come back later!");
+    var id =response.id;
+    res.redirect('/worker/'+id)
+    })
+});
+
+// display all tasks that can be picked by the worker
+ app.get('/worker/:id', function(req,res){
+            Request.find({reqid:req.params.id}, function(req,tasks){
+            res.render('tasks.jade', {tasks:tasks});
+                    });
+ });
+
+// to update a specific field in mongo, I tried and this works with $set which has to be inside an {curl braces} like in the following
+// db.requests.update({reqid:'54699d124f7b0b7858000001'}, {$set: {"title":"A presentation about MOON"}})
+// TODO make an update requests when a worker picks a task 
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
