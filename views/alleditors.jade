@@ -1,0 +1,5 @@
+h1  All Editors
+
+ul
+    each user in docs
+        li: a(href="/editors/#{user.id}") #{user.name} (#{user.email}) #{user.git} #{user.requests}

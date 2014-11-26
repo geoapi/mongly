@@ -1,13 +1,14 @@
 {
-  "name": "application-name",
+  "name": "Slydrz",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-     "start": "node app.js"
-             },
   "dependencies": {
+    "everyauth": "^0.4.9",
     "express": "3.4.0",
-    "jade": "*",
+    "express-session": "^1.9.2",
+    "jade": "1.7.0",
     "mongoose": "2.7.0",
+    "passport": "^0.2.1",
+    "passport-local": "^1.0.0"
   }
 }

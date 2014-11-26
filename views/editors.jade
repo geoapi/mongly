@@ -1,26 +1,29 @@
-form(method="post")
-    span First Name:
-    input(type="text", name="name", required=true)
-    br
-    
-    span Last Name:
-    input(type="text", name="lastname", required=true)
-    br
-    
-    span Address:
-    input(type="text", name="address", required=false)
-    br
-    
-    span Git User Name  
-    input(type="text", name="git", required=true)
-    br
+extends layout
 
-    span Email:
-    input(type="email", name="email", required=true)
+block content
+ form(method="post", class="form-horizontal", role="form")
+    label(for="name",class="control-label col-sm-2") First Name:
+    input(type="text", name="name", required=true, class= "input-block-level")
     br
-
-    span Password:
-    input(type="password", name="password", required=true)
     br
-
-    input(type="submit")
+    label(for="lastname",class="control-label col-sm-2") Last Name:
+    input(type="text", name="lastname", required=true, class= "input-block-level")
+    br
+    br
+    label(for="address",class="control-label col-sm-2") Address:
+    input(type="text", name="address", required=false, class= "input-block-level")
+    br
+    br
+    label(for="git",class="control-label col-sm-2") Git User Name
+    input(type="text", name="git", required=true, class= "input-block-level")
+    br
+    br
+    label(for="email",class="control-label col-sm-2") Email:
+    input(type="email", name="email", required=true, class= "input-block-level")
+    br
+    br
+    label(for="password",class="control-label col-sm-2") Password:
+    input(type="password", name="password", required=true, class= "input-block-level")
+    br
+    br
+    input(type="submit", class= "btn btn-success col-sm-offset-2 col-sm-1")

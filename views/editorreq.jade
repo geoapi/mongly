@@ -1,17 +1,20 @@
+extends layout
+
+block content
 h1 #{user}
 form(method="post", action="/editors/#{user}")
  div
   div
     span Title:
-    input(type="text", name="title", required=true)
+    input(type="text", name="title", required=true, class= "input-block-level")
     br
   div  
     span Description:
-    textarea(name="description", rows=5, required=true) Please explain your request
+    textarea(name="description", rows=5, required=true, class= "input-block-level") Please explain your request
     br
   div  
     span Git User Name  
-    input(type="text", name="git", required=true)
+    input(type="text", name="git", required=true, class= "input-block-level")
     br
 
-    input(type="submit")
+    input(type="submit", class= "btn btn-primary")
