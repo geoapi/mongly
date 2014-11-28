@@ -36,6 +36,8 @@ app.use(passport.session());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(app.router);
+
 // development only
 if ('development' == app.get('env')) {
 	  app.use(express.errorHandler());
@@ -85,7 +87,7 @@ var workerSchema = new Schema({
 // Requests (Title & Description)
 var requestSchema = new Schema({
     _creator:{type:Number, ref:'Editor'},
-    reqid:String,
+    reqid:String, // maybe not needed check if you can rely on _creator only
     title:String,
     description:String,
     pickers: [{type:Number, ref:'Worker'}]
@@ -102,9 +104,9 @@ var Worker = mongoose.model('Worker', workerSchema);
 // Letting auth sees Workers
 
 
-app.use(app.router);
 
-passport.use(new LocalStrategy({
+
+passport.use('worker',new LocalStrategy({
         usernameField: 'email',
         passwordField: 'password'
     },
@@ -123,6 +125,23 @@ passport.use(new LocalStrategy({
     }
 ));
 
+passport.use('editor',new LocalStrategy({
+        usernameField: 'email',
+        passwordField: 'password'
+    },
+    function(email, password, done) {
+        Editor.find({ email: email}, function(err, user) {
+            if (err) { return done(err); }
+            if (!user) {
+                return done(null, false, { message: 'Incorrect username.' });
+            }
+            if (user[0].password != password) {
+                return done(null, false, { message: 'Incorrect password.' });
+            }
+            return done(null, user);
+        });
+    }
+));
 
 passport.serializeUser(function(user, done) {
     //done(null, user[0]._id.id);
@@ -138,12 +157,16 @@ passport.deserializeUser(function(user, done) {
 //check if the user is authenticated or not, this function return true or false and will be used to protect a route
 
 function hasAuth(req, res, next) {
-    if (req.isAuthenticated()) { return next(); }
-    res.redirect('/login')
+    if (req.isAuthenticated())
+    {
+        return next();
+    } else {
+        res.redirect('/login')
+    }
 }
 
 app.get('/', function(req,res){
-      res.render('index.jade');
+   res.render('index.jade');
     });
 
 //ById
@@ -156,7 +179,9 @@ app.get('/', function(req,res){
 
 //login with passport support test
 
-app.get('/login', routes.login);
+app.get('/login', routes.login); //worker login
+app.get('/editorlogin', routes.login);
+app.get('/editordashboard', routes.editorlogin);
 
 //app.use(function(req, res, next) {
 //    var sess = req.session
@@ -167,7 +192,7 @@ app.get('/login', routes.login);
 //app.post('/login', function(req,res){
 //     var b=req.body;
 //     Worker.find({email: b.email},function(err,docs){
-//         if (err){return res.json(err)} //when there is no email found return correct log to user, and when password is not correct check later TODO
+//         if (err){return res.json(err)} //when there is no email found return correct log to user, and when password is not correct check later
 //         else if(b.password===docs[0].password )
 //         {   sess.email = b.email;
 //             sess.sid = docs[0]._id;
@@ -180,15 +205,26 @@ app.get('/login', routes.login);
 
 //POST LOG IN PASSPORT WAY not working yet TODO
 
-app.post('/login', passport.authenticate('local',{
+app.post('/login', passport.authenticate('worker',{
           failureRedirect :'/login',
           successRedirect :'/slydr'}
 ));
 
 
+app.post('/editorlogin', passport.authenticate('editor',{
+        failureRedirect :'/editorlogin',
+        successRedirect :'/editordashboard'}
+));
+
+//worker page
 app.get('/slydr', hasAuth, function(req,res){
   res.render('slydr.jade', {title:'hi'});
-  console.log('woooha');
+});
+
+
+app.get('/logout', function(req,res){
+    req.session.destroy();
+    res.redirect('/');
 });
 
 //app.post('/slydr', function(req,res){
@@ -197,7 +233,7 @@ app.get('/slydr', hasAuth, function(req,res){
 //    res.render('slydr.jade', {title:'hi'});
 //    console.log('Heyyyy!');
 //});
-
+//TODO make the the route of the editor login like you did to slydr
 app.post('/editors', function(req, res) {
 var b = req.body;
 console.log(b);
@@ -208,14 +244,33 @@ new Editor({
   password:b.password,
   git:b.git
   }).save(function(err, res) { if (err) console.log("err saving your information come back later!");
-    res.redirect('/slydr', {user:b.name})
+    res.redirect('/editordashboard', {user:b})
     })
 });
+
+// Worker Sign up
+app.post('/workers', function(req, res) {
+    var b = req.body;
+    console.log(b);
+    new Worker({
+        name: b.name,
+        lastname:b.lastname,
+        email: b.email,
+        password:b.password,
+        git:b.git
+    }).save(function(err, res) { if (err) console.log("err saving your information come back later!");
+            res.redirect('/slydr', {user:b})
+        })
+});
+
 
 // Get the Editor Sign Up form
 app.get('/editors', function(req,res){
                     res.render("editors.jade"); 
                     });
+app.get('/workers', function(req,res){
+    res.render("workers.jade");
+});
 //list all editors
 app.get('/alleditors', function(req,res) {
     Editor.find({}, function (err, docs) {
@@ -249,12 +304,13 @@ app.post('/editors/:id', function(req,res){
 //    Editor.findOne({_id:req.params.id}, function(err, docs) {
  //   console.log(docs._id);
     new Request({
-           reqid: rid,
+           _creator: rid,
+           reqid: rid,  //if omitted from Request this will need also to be deleted
            title: b.title,
            description:b.description
             }).save(function(err, response) { if (err) console.log("err saving your information come back later!")});
          console.log(b);
-         res.redirect('/')
+         res.redirect('/editordashboard') // TODO make a list of the recent requests in the dashboard
     });
 
 // This is how we can find something by an Id for example could be used by app.param middleware better to pass id to next function
@@ -276,25 +332,34 @@ app.post('/editors/:id', function(req,res){
 
 
 //doing a post to tasks required by an editor
-app.post('/editorstest/:id', function(req,res){
-// Editor.update({_id:ObjectId(req.params.id)},{title:b.title});
+//app.post('/editor/tasks/:id', function(req,res){
+//// Editor.update({_id:ObjectId(req.params.id)},{title:b.title});
+//
+//    var b = req.body;
+//    var rid = req.params.id;
+//// To find anything with in editors, the id needed to populate the requests to link them to the corresponding editor
+////    Editor.findOne({_id:req.params.id}, function(err, docs) {
+//    //   console.log(docs._id);
+//    new Request({
+//
+//        reqid: rid, //extra remove later
+//        title: b.title,
+//        description:b.description
+//        }).save(function(err, response) { if (err) console.log("err saving your information come back later!")});
+//    console.log(b);
+//    res.redirect('/editors/'+rid)
+//});
+//
 
-    var b = req.body;
-    var rid = req.params.id;
-// To find anything with in editors, the id needed to populate the requests to link them to the corresponding editor
-//    Editor.findOne({_id:req.params.id}, function(err, docs) {
-    //   console.log(docs._id);
-    new Request({
-        reqid: rid, //extra remove later
-        title: b.title,
-        description:b.description
-        }).save(function(err, response) { if (err) console.log("err saving your information come back later!")});
-    console.log(b);
-    res.redirect('/editors/'+rid)
-});
+//
+//app.get('/editors/logout', hasAuth, function(req, res){
+//    console.log("logging out");
+//    console.log(res.user);
+//    req.session.destroy();
+//    res.redirect('/');
+//});
 
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
-
