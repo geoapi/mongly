@@ -7,7 +7,7 @@ exports.index = function(req, res){
 
 // Get log in page same as app.get /login only as a module in routes
 exports.login = function(req, res){
-  res.render('login', { title: 'Log in to Slydrz' });
+  res.render('login');
 };
 
 // Get worker page

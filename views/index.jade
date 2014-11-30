@@ -21,7 +21,7 @@ block content
                     li
                         a(href='#contact') Contact
                     li.dropdown
-                        a.dropdown-toggle(href='#', data-toggle='dropdown')
+                        a.dropdown-toggle.btn.btn-primary(href='#', data-toggle='dropdown')
                             | Signup as
                             span.caret
                         ul.dropdown-menu(role='menu')
@@ -33,10 +33,26 @@ block content
                             li.dropdown-header Info
                             li
                                 a(href='#') Need Help ?
-                ul.nav.navbar-nav.navbar-right
-                    li.active
-                        a(href='./') Signin
-            // /.nav-collapse
+                                //ul.nav.navbar-nav.navbar-right
+                                //        navbar.navbar-collapse.collapse
+                                //            form.navbar-form.navbar-right(role='form', action='/login')
+                                //                .form-group
+                                //                    input.form-control(type='text',name='email', placeholder='Email')
+                                //                .form-group
+                                //                    input.form-control(type='password',name='password', placeholder='Password')
+                                //                button.btn.btn-success(type='submit') Sign in
+                                //                .navbar-collapse
+                                //                    .nav-collapse
+                    li.dropdown
+                        a.dropdown-toggle.btn.btn-success(href='#', data-toggle='dropdown')
+                            | Signin as
+                            span.caret
+                        ul.dropdown-menu(role='menu')
+                            li
+                                a(href='/editorlogin') Editor
+                            li
+                                a(href='/login') Worker
+
     .container
         // Main component for a primary marketing message or call to action
         .jumbotron
@@ -44,4 +60,9 @@ block content
             p
                 | Crowdsourcing Presentations! This prototype app to illustrate how to be part of the crowdsourcing of a creative presentations..
             p
-                a.btn.btn-lg.btn-primary(href='../../components/#navbar', role='button') Learn More &raquo
+                a.btn.btn-lg.btn-primary(href='#', role='button') Learn More &raquo
+    div
+        address
+        i
+        div
+            p.span Hello Strong!

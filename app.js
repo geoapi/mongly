@@ -108,22 +108,23 @@ var Worker = mongoose.model('Worker', workerSchema);
 
 passport.use('worker',new LocalStrategy({
         usernameField: 'email',
-        passwordField: 'password'
-    },
+        passwordField: 'password'},
     function(email, password, done) {
         console.log("hello!");
-        Worker.find({ email: email}, function(err, user) {
-            if (err) { return done(err); }
-            if (!user) {
-                return done(null, false, { message: 'Incorrect username.' });
-            }
-            if (user[0].password != password) {
-                return done(null, false, { message: 'Incorrect password.' });
-            }
-            return done(null, user);
+        if(typeof(password)!= undefined) {
+            Worker.find({email: email}, function (err, user) {
+                if (err) {
+                    return done(err);
+                }
+                if (!user) {
+                    return done(null, false, {message: 'Incorrect username.'});
+                }
+                if (user[0] != undefined && password !== user[0].password) {
+                    return done(null, false, {message: 'Incorrect password.'});
+                }
+               if (user[0] != undefined) return done(null, user); else return done(err);
             });
-    }
-));
+        }} ));
 
 passport.use('editor',new LocalStrategy({
         usernameField: 'email',
@@ -161,7 +162,7 @@ function hasAuth(req, res, next) {
     {
         return next();
     } else {
-        res.redirect('/login')
+        res.redirect('/')
     }
 }
 
