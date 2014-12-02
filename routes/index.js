@@ -15,7 +15,7 @@ exports.slydr = function(req, res){
   if(req.session.passport.user=== undefined){
     res.redirect('/login');
   } else
-  { res.render('slydr', { title: 'Hello to Slydrz!' })}
+  { res.render('slydr', { title:"please try again"})}
 };
 
 //To DO Send the editor info to be rendered
@@ -25,7 +25,7 @@ exports.editorlogin = function(req, res){
   if(req.session.passport.user=== undefined){
     res.redirect('/editorlogin');
   } else
-  { res.render('editordashboard', { title: 'Hello to Slydrz!' })}
+  { res.render('editordashboard', { user:  req.user  })}
 };
 
 
