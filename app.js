@@ -66,6 +66,7 @@ var editorSchema = new Schema({
     phone:String,
     git:String,
     address:String,
+    date:{type: Date, default: Date.now},
     requests: [{type:Schema.Types.ObjectId, ref:'Request'}]
     });
 
@@ -78,9 +79,8 @@ var workerSchema = new Schema({
     email:String,
     password:String,
     git:String,
-    register_date:Date,
+    date:{type: Date, default: Date.now},
     picked_tasks: [{type:Schema.Types.ObjectId, ref:'Request'}]
-
 });
 
 
@@ -90,9 +90,9 @@ var requestSchema = new Schema({
     reqid:String, // maybe not needed check if you can rely on _creator only
     title:String,
     description:String,
-    pickers: [{type:Number, ref:'Worker'}]
+    date:{type: Date, default: Date.now},
+    pickers: [{type:Schema.Types.ObjectId}] //, ref:'Worker'
 });
-
 
 
 
@@ -183,6 +183,7 @@ app.get('/', function(req,res){
 app.get('/login', routes.login); //worker login
 app.get('/editorlogin', routes.login);
 app.get('/editordashboard', routes.editorlogin);
+app.get('/slydr',routes.slydr)
 
 //app.use(function(req, res, next) {
 //    var sess = req.session
@@ -234,7 +235,7 @@ app.post('/editorlogin', passport.authenticate('editor',{
 
 //worker page
 app.get('/slydr', hasAuth, function(req,res){
-  res.render('slydr.jade', {title:'hi'});
+  res.render('slydr.jade', {user: req.user});
 });
 
 
@@ -260,23 +261,24 @@ new Editor({
   password:b.password,
   git:b.git
   }).save(function(err, res) { if (err) console.log("err saving your information come back later!");
-    res.redirect('/editordashboard', {user:b})
-    })
+    });
+        res.redirect('/editorlogin')
 });
 
 // Worker Sign up
 app.post('/workers', function(req, res) {
     var b = req.body;
-    console.log(b);
+ //   console.log(b);
     new Worker({
         name: b.name,
         lastname:b.lastname,
         email: b.email,
         password:b.password,
         git:b.git
-    }).save(function(err, res) { if (err) console.log("err saving your information come back later!");
-            res.redirect('/slydr', {user:b})
-        })
+    }).save(function(err, res) { if (err) console.log("err saving your information come back later!")});
+
+    res.redirect('/login')
+
 });
 
 
@@ -295,9 +297,10 @@ app.get('/alleditors', function(req,res) {
         res.render("alleditors.jade", {docs: docs});
     });
 });
+
 //Editor - Write a request
 app.get('/editors/:id', function(req,res){
-                    res.render("editorreq.jade", {user:req.params.id});
+    res.render("editorreq.jade", {user:req.params.id});
      // for now redirect  to make some requests
     // TODO Editors' posts need to be populated to the jadeview and also shown, with ability to add for more
          });
@@ -314,19 +317,20 @@ app.post('/editors/:id', function(req,res){
 
     var b = req.body;
     var rid = req.params.id;
-    console.log(b, rid);
+  //  console.log(b, rid);
 
 // To find anything with in editors, the id needed to populate the requests to link them to the corresponding editor
 //    Editor.findOne({_id:req.params.id}, function(err, docs) {
  //   console.log(docs._id);
     new Request({
            _creator: rid,
-           reqid: rid,  //if omitted from Request this will need also to be deleted
+           reqid: rid,  //The reqid is a string , if omitted from Request this will need also to be deleted
            title: b.title,
+           git: b.git,
            description:b.description
             }).save(function(err, response) { if (err) console.log("err saving your information come back later!")});
          console.log(b);
-         res.redirect('/editordashboard') // TODO make a list of the recent requests in the dashboard
+         res.redirect('/editordashboard'); // TODO make a list of the recent requests in the dashboard
     });
 
 // This is how we can find something by an Id for example could be used by app.param middleware better to pass id to next function
@@ -339,12 +343,53 @@ app.post('/editors/:id', function(req,res){
 //      })}
 //);
 
-//show all tasks requested by an editor with id :id
-    app.get('/etasks/:id', function(req,res){
-            Request.find({reqid:req.params.id}, function(req,tasks){
-            res.render('tasks.jade', {tasks:tasks});
-                    });
- });
+
+//Get all requests made by an editor where he is recognized by his ID
+app.get('/editors/:id/requests', function(req,res){
+        Request.find({reqid:req.params.id}, function (err, b){
+            //res.end(b);
+        res.render('requests.jade', {requests:b});
+        //    console.log(b.name);
+        })}
+);
+//Get all requests so the worker sees them
+app.get('/workers/:id/requests', function(req,res){
+        //Find All Requests in the Requests File
+            Request.find({}, function (err, b){
+            //res.end(b);
+            res.render('slidesRequests.jade', {requests:b, id:req.params.id});
+            //    console.log(b.name);
+        })}
+);
+
+// when a worker pick a task we need to store the id of that task to his picked_tasks
+// and also we need to store the id of that worker in the requests' pickers
+app.get('/workers/requests/:id', function(req,res) {
+   // console.log(req.params.id);
+    findReq(req.params.id,req.user._id);
+     //console.log(req.user);
+        res.redirect('/slydr');
+    });
+
+
+var findReq = function(KK,ruid){
+    Request.find({_id:KK}, function (err, onerequest) {
+        if (err) return;
+   onerequest.pickers.push(ruid);
+     //   .populate('pickers').exec();
+    //    else {
+    //        onerequest.pickers = [];
+    //        onerequest.pickers.push(req.params.id);
+        });
+ //}
+//)
+};
+//show all tasks requested by an editor with id :id   PS: REPLACES WITH JSON COMPATIBLE above request
+//    app.get('/etasks/:id', function(req,res){
+//            Request.find({reqid:req.params.id}, function(req,tasks){
+//            res.render('tasks.jade', {tasks:tasks});
+//                    });
+// });
 
 
 //doing a post to tasks required by an editor

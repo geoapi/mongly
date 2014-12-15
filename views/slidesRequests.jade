@@ -1,0 +1,8 @@
+h1  All Requests
+
+ul
+    if requests
+        each request in requests
+            p
+                li #{request.title} #{request.description}
+                    ul: a(href="/workers/requests/#{request._id}") Pick now
